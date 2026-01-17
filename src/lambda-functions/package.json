@@ -1,0 +1,16 @@
+{
+  "name": "lambda-functions",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "./build.sh",
+    "build:all": "./build.sh",
+    "watch": "tsc -w",
+    "lint": "eslint . --ext .ts"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.159",
+    "@types/node": "^25.0.9",
+    "typescript": "^5.9.3",
+    "ts-node": "^10.9.2"
+  }
+}
