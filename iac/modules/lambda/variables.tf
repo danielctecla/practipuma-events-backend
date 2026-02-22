@@ -10,9 +10,15 @@ variable "s3_key" {
   type = string
 }
 
+variable "local_source_path" {
+  description = "Local path to the Lambda function ZIP file"
+  type        = string
+  default     = null
+}
+
 variable "runtime" {
   type = string
-  default = "nodejs18.x"
+  default = "nodejs22.x"
 }
 
 variable "handler" {
