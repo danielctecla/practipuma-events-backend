@@ -31,6 +31,12 @@ module "ingest_learning_events_lambda" {
   s3_key    = "ingest-learning-events/function.zip"
 
   local_source_path = "${path.root}/../../../src/lambda-functions/ingest-learning-events/function.zip"
+
+  environment_variables = {
+    SUPABASE_URL              = var.supabase_url
+    SUPABASE_SERVICE_ROLE_KEY = var.supabase_service_role_key
+    IS_PRODUCTION             = "false"
+  }
 }
 
 module "api_gateway" {
