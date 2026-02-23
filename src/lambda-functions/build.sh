@@ -34,23 +34,27 @@ if [ -f "index.ts" ]; then
     fi
     
     npx tsc
-    
+
     cd dist
-    zip -r ../function.zip .
+    find . -exec touch -t 202001010000 {} +
+    find . -type f | LC_ALL=C sort | zip -@ ../function.zip
     cd ..
-    
+
     if [ -f "package.json" ]; then
-        npm install --production --no-package-lock
-        zip -r function.zip node_modules
+        npm ci --omit=dev
+        find node_modules -exec touch -t 202001010000 {} +
+        find node_modules -type f | LC_ALL=C sort | zip -@ function.zip
     fi
-    
+
 elif [ -f "index.js" ]; then
-    
+
+    touch -t 202001010000 index.js
     zip function.zip index.js
-    
+
     if [ -f "package.json" ]; then
-        npm install --production --no-package-lock
-        zip -r function.zip node_modules
+        npm ci --omit=dev
+        find node_modules -exec touch -t 202001010000 {} +
+        find node_modules -type f | LC_ALL=C sort | zip -@ function.zip
     fi
 else
     exit 1
