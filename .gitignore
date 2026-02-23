@@ -1,4 +1,6 @@
 *.zip
+supabase/
+dist/
 
 #-------------------------------- Terraform
 .terraform/
@@ -110,6 +112,9 @@ tests/baselines/reference/dt
 .failed-tests
 TEST-results.xml
 package-lock.json
+!src/lambda-functions/**/package-lock.json
 .eslintcache
 *v8.log
 /lib/
+
+CLAUDE.md
