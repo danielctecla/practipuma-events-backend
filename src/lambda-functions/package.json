@@ -5,11 +5,13 @@
     "build": "./build.sh",
     "build:all": "./build.sh",
     "watch": "tsc -w",
-    "lint": "eslint . --ext .ts"
+    "lint": "eslint ."
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.159",
     "@types/node": "^25.0.9",
+    "eslint": "^9.0.0",
+    "typescript-eslint": "^8.0.0",
     "typescript": "^5.9.3",
     "ts-node": "^10.9.2"
   }
