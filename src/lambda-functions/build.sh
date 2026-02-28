@@ -37,24 +37,24 @@ if [ -f "index.ts" ]; then
 
     cd dist
     find . -exec touch -t 202001010000 {} +
-    find . -type f | LC_ALL=C sort | zip -@ ../function.zip
+    find . -type f | LC_ALL=C sort | zip -X -@ ../function.zip
     cd ..
 
     if [ -f "package.json" ]; then
         npm ci --omit=dev
         find node_modules -exec touch -t 202001010000 {} +
-        find node_modules -type f | LC_ALL=C sort | zip -@ function.zip
+        find node_modules -type f | LC_ALL=C sort | zip -X -@ function.zip
     fi
 
 elif [ -f "index.js" ]; then
 
     touch -t 202001010000 index.js
-    zip function.zip index.js
+    zip -X function.zip index.js
 
     if [ -f "package.json" ]; then
         npm ci --omit=dev
         find node_modules -exec touch -t 202001010000 {} +
-        find node_modules -type f | LC_ALL=C sort | zip -@ function.zip
+        find node_modules -type f | LC_ALL=C sort | zip -X -@ function.zip
     fi
 else
     exit 1
