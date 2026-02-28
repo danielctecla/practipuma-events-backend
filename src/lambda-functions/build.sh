@@ -33,7 +33,7 @@ if [ -f "index.ts" ]; then
         npm install
     fi
     
-    npx tsc
+    ../node_modules/.bin/tsc
 
     cd dist
     find . -exec touch -t 202001010000 {} +
