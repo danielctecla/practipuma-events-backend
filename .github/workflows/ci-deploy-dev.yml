@@ -60,6 +60,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+          cache: "npm"
+          cache-dependency-path: src/lambda-functions/package-lock.json
+
+      - name: Install dev dependencies
+        run: npm ci
+        working-directory: src/lambda-functions
 
       - name: Build all Lambda functions
         run: ./build.sh
