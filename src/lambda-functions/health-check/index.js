@@ -1,4 +1,4 @@
-exports.handler = async (event, context) => {
+exports.handler = async (_event, _context) => {
   console.log("Health check invoked");
 
   try {
