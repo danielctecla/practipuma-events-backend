@@ -40,7 +40,7 @@ resource "aws_s3_object" "lambda_code" {
   bucket = var.s3_bucket
   key    = var.s3_key
   source = var.local_source_path
-  etag   = filemd5(var.local_source_path)
+  source_hash = filemd5(var.local_source_path)
 
   tags = var.tags
 }
