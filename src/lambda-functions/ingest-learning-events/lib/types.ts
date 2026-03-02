@@ -1,20 +1,17 @@
-import type { Json } from "./database.types";
-
-export type { Json };
-
-export type LambdaResponse<T extends Record<string, unknown>> = {
+export type ApiGatewayResponse = {
   statusCode: number;
-  body: T;
+  headers: Record<string, string>;
+  body: string;
 };
 
-export const toApiResponse = <T extends Record<string, unknown>>(
-  response: LambdaResponse<T>
-) => ({
-  statusCode: response.statusCode,
+export const toApiResponse = <T>(
+  statusCode: number,
+  body: T
+): ApiGatewayResponse => ({
+  statusCode,
   headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(response.body),
+  body: JSON.stringify(body),
 });
-
 // ---------------------------------------------------------------------------
 // Learning event types
 // ---------------------------------------------------------------------------
