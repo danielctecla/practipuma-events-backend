@@ -8,28 +8,19 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   const authHeader = event.headers?.authorization;
 
   if (!authHeader) {
-    return toApiResponse<{ error: string }>({
-      statusCode: 401,
-      body: { error: "Unauthorized" },
-    });
+    return toApiResponse(401, { error: "Unauthorized" });
   }
 
   const user = await validateSession(authHeader);
 
   if (!user) {
-    return toApiResponse<{ error: string }>({
-      statusCode: 401,
-      body: { error: "Unauthorized" },
-    });
+    return toApiResponse(401, { error: "Unauthorized" });
   }
 
   const parsed = parseEventBody(event.body);
 
   if (!parsed.ok) {
-    return toApiResponse<{ error: string }>({
-      statusCode: 400,
-      body: { error: parsed.reason },
-    });
+    return toApiResponse(400, { error: parsed.reason });
   }
 
   console.log("Ingesting event", {
@@ -37,17 +28,11 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     eventType: parsed.payload.eventType,
   });
 
-  const { error } = await insertUserEvent(user.id, parsed.payload);
+  const result = await insertUserEvent(user.id, parsed.payload);
 
-  if (error) {
-    return toApiResponse<{ error: string }>({
-      statusCode: 500,
-      body: { error: "Failed to record event" },
-    });
+  if (!result.ok) {
+    return toApiResponse(500, { error: result.error });
   }
 
-  return toApiResponse<{ message: string }>({
-    statusCode: 200,
-    body: { message: "Event recorded" },
-  });
+  return toApiResponse(200, { message: "Event recorded" });
 };
