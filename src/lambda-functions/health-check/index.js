@@ -1,3 +1,5 @@
+const isProduction = process.env.IS_PRODUCTION === "true";
+
 exports.handler = async (_event, _context) => {
   console.log("Health check invoked");
 
@@ -13,7 +15,7 @@ exports.handler = async (_event, _context) => {
         status: "healthy",
         timestamp,
         uptime: process.uptime(),
-        environment: process.env.NODE_ENV || "development",
+        environment: isProduction ? "production" : "development",
       }),
     };
   } catch (error) {
