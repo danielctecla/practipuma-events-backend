@@ -20,6 +20,10 @@ module "health_check_lambda" {
   
   # Local path to the built Lambda function
   local_source_path = "${path.root}/../../../src/lambda-functions/health-check/function.zip"
+
+  environment_variables = {
+    IS_PRODUCTION = "false"
+  }
 }
 
 module "ingest_learning_events_lambda" {
