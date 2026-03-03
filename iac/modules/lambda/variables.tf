@@ -47,6 +47,11 @@ variable "policy_statements" {
   default     = []
 }
 
+variable "stage" {
+  description = "Deployment stage (e.g. dev, prod)"
+  type        = string
+}
+
 variable "tags" {
   description = "A map of tags to add to all resources"
   type        = map(string)

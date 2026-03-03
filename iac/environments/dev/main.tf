@@ -14,6 +14,7 @@ module "health_check_lambda" {
   source = "../../modules/lambda"
 
   function_name = "health-check"
+  stage         = "dev"
 
   s3_bucket = "practipuma-lambda-code-dev"
   s3_key    = "health-check/function.zip"
@@ -30,6 +31,7 @@ module "ingest_learning_events_lambda" {
   source = "../../modules/lambda"
 
   function_name = "ingest-learning-events"
+  stage         = "dev"
 
   s3_bucket = "practipuma-lambda-code-dev"
   s3_key    = "ingest-learning-events/function.zip"
@@ -46,7 +48,7 @@ module "ingest_learning_events_lambda" {
 module "api_gateway" {
   source = "../../modules/apigateway"
 
-  name = "practipuma-event-gateway"
+  name = "practipuma-event-gateway-dev"
   stage_name = "dev"
 
   lambda_integrations = {
