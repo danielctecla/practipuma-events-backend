@@ -1,5 +1,5 @@
 resource "aws_iam_role" "this" {
-  name = "${var.function_name}-role"
+  name = "${var.function_name}-role-${var.stage}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -14,7 +14,7 @@ resource "aws_iam_role" "this" {
 }
 
 resource "aws_iam_role_policy" "this" {
-  name = "${var.function_name}-policy"
+  name = "${var.function_name}-policy-${var.stage}"
   role = aws_iam_role.this.id
 
   policy = jsonencode({
@@ -46,7 +46,7 @@ resource "aws_s3_object" "lambda_code" {
 }
 
 resource "aws_lambda_function" "this" {
-  function_name = var.function_name
+  function_name = "${var.function_name}-${var.stage}"
   role = aws_iam_role.this.arn
 
   s3_bucket = var.s3_bucket
