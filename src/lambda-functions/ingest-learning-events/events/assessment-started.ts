@@ -1,5 +1,5 @@
 import { isRecord, isStringArray } from "../lib/types";
-import { ExamAreaId } from "./shared";
+import { ExamAreaId, StandardMode, isStandardMode, parseExamAreaId } from "./shared";
 
 export type { ExamAreaId };
 
@@ -24,7 +24,7 @@ export type SubtopicAssessmentMetadata = {
 };
 
 export type StandardAssessmentMetadata = {
-  mode: "subject" | "recent" | "random";
+  mode: StandardMode;
   subjects: string[];
   questionCount: number;
   timerEnabled: boolean;
@@ -38,62 +38,84 @@ export type AssessmentStartedMetadata =
   | SubtopicAssessmentMetadata
   | StandardAssessmentMetadata;
 
-function isExamAssessmentMetadata(
+// ---------------------------------------------------------------------------
+// Private helpers
+// ---------------------------------------------------------------------------
+
+type SharedSessionFields = {
+  subjects: string[];
+  questionCount: number;
+  timerEnabled: boolean;
+  timeLimit: number | null;
+  justificationsEnabled: boolean;
+};
+
+function parseSharedSessionFields(
   m: Record<string, unknown>
-): m is ExamAssessmentMetadata {
-  return (
-    m.mode === "exam" &&
-    (m.examArea === "1" ||
-      m.examArea === "2" ||
-      m.examArea === "3" ||
-      m.examArea === "4")
-  );
+): SharedSessionFields | null {
+  const { subjects, questionCount, timerEnabled, timeLimit, justificationsEnabled } = m;
+  if (!isStringArray(subjects)) return null;
+  if (typeof questionCount !== "number") return null;
+  if (typeof timerEnabled !== "boolean") return null;
+  if (typeof timeLimit !== "number" && timeLimit !== null) return null;
+  if (typeof justificationsEnabled !== "boolean") return null;
+  return { subjects, questionCount, timerEnabled, timeLimit, justificationsEnabled };
 }
 
-function isHardcoreAssessmentMetadata(
+function parseExamAssessmentMetadata(
   m: Record<string, unknown>
-): m is HardcoreAssessmentMetadata {
-  return m.mode === "hardcore" && isStringArray(m.subjects);
+): ExamAssessmentMetadata | null {
+  if (m.mode !== "exam") return null;
+  const examArea = parseExamAreaId(m.examArea);
+  if (!examArea) return null;
+  return { mode: "exam", examArea };
 }
 
-function isSubtopicAssessmentMetadata(
+function parseHardcoreAssessmentMetadata(
   m: Record<string, unknown>
-): m is SubtopicAssessmentMetadata {
-  return (
-    m.mode === "subtopic" &&
-    isStringArray(m.subjects) &&
-    typeof m.topic === "string" &&
-    typeof m.questionCount === "number" &&
-    typeof m.timerEnabled === "boolean" &&
-    (typeof m.timeLimit === "number" || m.timeLimit === null) &&
-    typeof m.justificationsEnabled === "boolean"
-  );
+): HardcoreAssessmentMetadata | null {
+  if (m.mode !== "hardcore") return null;
+  const { subjects } = m;
+  if (!isStringArray(subjects)) return null;
+  return { mode: "hardcore", subjects };
 }
 
-function isStandardAssessmentMetadata(
+function parseSubtopicAssessmentMetadata(
   m: Record<string, unknown>
-): m is StandardAssessmentMetadata {
-  return (
-    (m.mode === "subject" || m.mode === "recent" || m.mode === "random") &&
-    isStringArray(m.subjects) &&
-    typeof m.questionCount === "number" &&
-    typeof m.timerEnabled === "boolean" &&
-    (typeof m.timeLimit === "number" || m.timeLimit === null) &&
-    typeof m.justificationsEnabled === "boolean"
-  );
+): SubtopicAssessmentMetadata | null {
+  if (m.mode !== "subtopic") return null;
+  const { topic } = m;
+  if (typeof topic !== "string") return null;
+  const shared = parseSharedSessionFields(m);
+  if (!shared) return null;
+  return { mode: "subtopic", topic, ...shared };
 }
 
-export function isAssessmentStartedMetadata(
+function parseStandardAssessmentMetadata(
+  m: Record<string, unknown>
+): StandardAssessmentMetadata | null {
+  const { mode } = m;
+  if (!isStandardMode(mode)) return null;
+  const shared = parseSharedSessionFields(m);
+  if (!shared) return null;
+  return { mode, ...shared };
+}
+
+// ---------------------------------------------------------------------------
+// Exported parser
+// ---------------------------------------------------------------------------
+
+export function parseAssessmentStartedMetadata(
   m: unknown
-): m is AssessmentStartedMetadata {
-  if (!isRecord(m)) return false;
+): AssessmentStartedMetadata | null {
+  if (!isRecord(m)) return null;
   switch (m.mode) {
-    case "exam":     return isExamAssessmentMetadata(m);
-    case "hardcore": return isHardcoreAssessmentMetadata(m);
-    case "subtopic": return isSubtopicAssessmentMetadata(m);
+    case "exam":     return parseExamAssessmentMetadata(m);
+    case "hardcore": return parseHardcoreAssessmentMetadata(m);
+    case "subtopic": return parseSubtopicAssessmentMetadata(m);
     case "subject":
     case "recent":
-    case "random":   return isStandardAssessmentMetadata(m);
-    default:         return false;
+    case "random":   return parseStandardAssessmentMetadata(m);
+    default:         return null;
   }
 }
