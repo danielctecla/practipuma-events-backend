@@ -1,6 +1,7 @@
 import { isRecord, isStringArray } from "../lib/types";
+import { ExamAreaId } from "./shared";
 
-export type ExamAreaId = "area1" | "area2" | "area3" | "area4";
+export type { ExamAreaId };
 
 export type ExamAssessmentMetadata = {
   mode: "exam";
@@ -42,10 +43,10 @@ function isExamAssessmentMetadata(
 ): m is ExamAssessmentMetadata {
   return (
     m.mode === "exam" &&
-    (m.examArea === "area1" ||
-      m.examArea === "area2" ||
-      m.examArea === "area3" ||
-      m.examArea === "area4")
+    (m.examArea === "1" ||
+      m.examArea === "2" ||
+      m.examArea === "3" ||
+      m.examArea === "4")
   );
 }
 
