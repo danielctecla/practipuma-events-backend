@@ -5,11 +5,11 @@ import {
 } from "../events/question-answered";
 import {
   AssessmentStartedMetadata,
-  isAssessmentStartedMetadata,
+  parseAssessmentStartedMetadata,
 } from "../events/assessment-started";
 import {
   AssessmentCompletedMetadata,
-  isAssessmentCompletedMetadata,
+  parseAssessmentCompletedMetadata,
 } from "../events/assessment-completed";
 
 type BaseEventFields = {
@@ -69,20 +69,21 @@ export function parseEventBody(rawBody: string | undefined): ParseResult {
       }
       return { ok: true, payload: { eventType, metadata, ...baseFields } };
 
-    case "assessment_started":
-      if (!isAssessmentStartedMetadata(metadata)) {
+    case "assessment_started": {
+      const parsedMetadata = parseAssessmentStartedMetadata(metadata);
+      if (!parsedMetadata) {
         return { ok: false, reason: "Invalid metadata for assessment_started" };
       }
-      return { ok: true, payload: { eventType, metadata, ...baseFields } };
+      return { ok: true, payload: { eventType, metadata: parsedMetadata, ...baseFields } };
+    }
 
-    case "assessment_completed":
-      if (!isAssessmentCompletedMetadata(metadata)) {
-        return {
-          ok: false,
-          reason: "Invalid metadata for assessment_completed",
-        };
+    case "assessment_completed": {
+      const parsedMetadata = parseAssessmentCompletedMetadata(metadata);
+      if (!parsedMetadata) {
+        return { ok: false, reason: "Invalid metadata for assessment_completed" };
       }
-      return { ok: true, payload: { eventType, metadata, ...baseFields } };
+      return { ok: true, payload: { eventType, metadata: parsedMetadata, ...baseFields } };
+    }
 
     default:
       return { ok: false, reason: `Unsupported eventType: ${eventType}` };
