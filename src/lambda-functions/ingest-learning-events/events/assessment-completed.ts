@@ -1,10 +1,9 @@
 import { isRecord, isStringArray } from "../lib/types";
-
-export type CompletedExamAreaId = "1" | "2" | "3" | "4";
+import { ExamAreaId } from "./shared";
 
 export type ExamCompletedMetadata = {
   mode: "exam";
-  examArea: CompletedExamAreaId;
+  examArea: ExamAreaId;
   totalQuestions: number;
   correct: number;
   incorrect: number;
