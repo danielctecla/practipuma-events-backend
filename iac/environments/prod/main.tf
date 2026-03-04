@@ -1,0 +1,75 @@
+provider "aws" {
+  region = "us-east-1"
+
+  default_tags {
+    tags = {
+      STAGE   = "prod"
+      PROJECT = "practipuma"
+      MANAGED = "terraform"
+    }
+  }
+}
+
+resource "aws_s3_bucket" "lambda_code" {
+  bucket = "practipuma-lambda-code-prod"
+}
+
+module "health_check_lambda" {
+  source = "../../modules/lambda"
+
+  function_name = "health-check"
+  stage         = "prod"
+
+  s3_bucket = aws_s3_bucket.lambda_code.bucket
+  s3_key    = "health-check/function.zip"
+
+  local_source_path = "${path.root}/../../../src/lambda-functions/health-check/function.zip"
+
+  environment_variables = {
+    IS_PRODUCTION = "true"
+  }
+}
+
+module "ingest_learning_events_lambda" {
+  source = "../../modules/lambda"
+
+  function_name = "ingest-learning-events"
+  stage         = "prod"
+
+  s3_bucket = aws_s3_bucket.lambda_code.bucket
+  s3_key    = "ingest-learning-events/function.zip"
+
+  local_source_path = "${path.root}/../../../src/lambda-functions/ingest-learning-events/function.zip"
+
+  environment_variables = {
+    SUPABASE_URL              = var.supabase_url
+    SUPABASE_SERVICE_ROLE_KEY = var.supabase_service_role_key
+    IS_PRODUCTION             = "true"
+  }
+}
+
+module "api_gateway" {
+  source = "../../modules/apigateway"
+
+  name  = "practipuma-event-gateway"
+  stage = "prod"
+
+  lambda_integrations = {
+    health = {
+      lambda_invoke_arn    = module.health_check_lambda.invoke_arn
+      lambda_function_name = module.health_check_lambda.function_name
+    }
+    ingest_learning_events = {
+      lambda_invoke_arn    = module.ingest_learning_events_lambda.invoke_arn
+      lambda_function_name = module.ingest_learning_events_lambda.function_name
+    }
+  }
+
+  cors_allow_origins = ["*"]
+  cors_allow_methods = ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
+
+  routes = [
+    { method = "GET",  path = "/health", integration_key = "health" },
+    { method = "POST", path = "/events", integration_key = "ingest_learning_events" }
+  ]
+}
