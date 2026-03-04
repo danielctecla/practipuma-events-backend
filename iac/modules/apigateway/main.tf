@@ -1,6 +1,6 @@
 
 resource "aws_apigatewayv2_api" "this" {
-  name          = var.name
+  name          = "${var.name}-${var.stage}"
   protocol_type = "HTTP"
 
   #todo: add CORS config
@@ -35,7 +35,7 @@ resource "aws_apigatewayv2_route" "this" {
 }
 
 resource "aws_cloudwatch_log_group" "api_gateway" {
-  name              = "/aws/apigateway/${var.name}"
+  name              = "/aws/apigateway/${var.name}-${var.stage}"
   retention_in_days = 7
 
   tags = var.tags
@@ -43,7 +43,7 @@ resource "aws_cloudwatch_log_group" "api_gateway" {
 
 resource "aws_apigatewayv2_stage" "this" {
   api_id      = aws_apigatewayv2_api.this.id
-  name        = var.stage_name
+  name        = var.stage
   auto_deploy = true
 
   access_log_settings {
