@@ -1,5 +1,5 @@
 resource "aws_iam_role" "this" {
-  name = "${var.function_name}-role-${var.stage}"
+  name = "${var.function_name}-${var.stage}-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -14,7 +14,7 @@ resource "aws_iam_role" "this" {
 }
 
 resource "aws_iam_role_policy" "this" {
-  name = "${var.function_name}-policy-${var.stage}"
+  name = "${var.function_name}-${var.stage}-policy"
   role = aws_iam_role.this.id
 
   policy = jsonencode({
