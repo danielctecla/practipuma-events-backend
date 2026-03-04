@@ -1,22 +1,16 @@
-name: CI / Deploy
+name: CI / Deploy Prod
 
 on:
   pull_request:
-    branches: [develop, main]
+    branches: [main]
   push:
-    branches: [develop]
+    branches: [main]
 
-# Top-level permissions for OIDC token (id-token) and repo checkout (contents).
-# Each job that does NOT need AWS access only needs contents: read.
 permissions:
   id-token: write
   contents: read
 
 jobs:
-  # ---------------------------------------------------------------------------
-  # ci: TypeScript type-check + ESLint
-  # Runs on every PR and every push to develop.
-  # ---------------------------------------------------------------------------
   ci:
     name: Typecheck & Lint
     runs-on: ubuntu-latest
@@ -46,10 +40,6 @@ jobs:
         run: npm run lint
         working-directory: src/lambda-functions
 
-  # ---------------------------------------------------------------------------
-  # build: Compile TypeScript and produce function.zip for every Lambda.
-  # Runs in parallel with ci — deploy-dev waits for both.
-  # ---------------------------------------------------------------------------
   build:
     name: Build Lambda functions
     runs-on: ubuntu-latest
@@ -71,8 +61,6 @@ jobs:
         run: ./build.sh
         working-directory: src/lambda-functions
 
-      # Upload artifacts so deploy-dev can use them without rebuilding.
-      # Paths are relative to the workspace root; directory structure is preserved.
       - uses: actions/upload-artifact@v4
         with:
           name: lambda-zips
@@ -81,22 +69,16 @@ jobs:
             src/lambda-functions/ingest-learning-events/function.zip
           retention-days: 1
 
-  # ---------------------------------------------------------------------------
-  # deploy-dev: Deploy to the dev environment via Terraform.
-  # Only runs on push to develop (not on PRs).
-  # ---------------------------------------------------------------------------
-  deploy-dev:
-    name: Deploy to dev
+  deploy-prod:
+    name: Deploy to prod
     runs-on: ubuntu-latest
     needs: [ci, build]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
-    environment: dev
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: prod
 
     steps:
       - uses: actions/checkout@v4
 
-      # Restore the function.zip files into the exact workspace paths that
-      # Terraform's local_source_path references.
       - uses: actions/download-artifact@v4
         with:
           name: lambda-zips
@@ -114,16 +96,15 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-        working-directory: iac/environments/dev
+        working-directory: iac/environments/prod
 
       - name: Terraform Plan
         run: terraform plan -out=tfplan -detailed-exitcode
-        working-directory: iac/environments/dev
+        working-directory: iac/environments/prod
         env:
           TF_VAR_supabase_url: ${{ secrets.SUPABASE_URL }}
           TF_VAR_supabase_service_role_key: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
 
       - name: Terraform Apply
         run: terraform apply tfplan
-        working-directory: iac/environments/dev
-
+        working-directory: iac/environments/prod
