@@ -3,10 +3,9 @@ variable "name" {
   type        = string
 }
 
-variable "stage_name" {
-  description = "Stage name (e.g., dev, prod)"
+variable "stage" {
+  description = "Deployment stage (e.g., dev, prod)"
   type        = string
-  default     = "$default"
 }
 
 variable "lambda_integrations" {
