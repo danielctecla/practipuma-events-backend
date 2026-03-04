@@ -10,13 +10,17 @@ provider "aws" {
   }
 }
 
+resource "aws_s3_bucket" "lambda_code" {
+  bucket = "practipuma-lambda-code-dev"
+}
+
 module "health_check_lambda" {
   source = "../../modules/lambda"
 
   function_name = "health-check"
   stage         = "dev"
 
-  s3_bucket = "practipuma-lambda-code-dev"
+  s3_bucket = aws_s3_bucket.lambda_code.bucket
   s3_key    = "health-check/function.zip"
   
   # Local path to the built Lambda function
@@ -33,7 +37,7 @@ module "ingest_learning_events_lambda" {
   function_name = "ingest-learning-events"
   stage         = "dev"
 
-  s3_bucket = "practipuma-lambda-code-dev"
+  s3_bucket = aws_s3_bucket.lambda_code.bucket
   s3_key    = "ingest-learning-events/function.zip"
 
   local_source_path = "${path.root}/../../../src/lambda-functions/ingest-learning-events/function.zip"
@@ -48,8 +52,8 @@ module "ingest_learning_events_lambda" {
 module "api_gateway" {
   source = "../../modules/apigateway"
 
-  name = "practipuma-event-gateway-dev"
-  stage_name = "dev"
+  name  = "practipuma-event-gateway"
+  stage = "dev"
 
   lambda_integrations = {
     health = {
